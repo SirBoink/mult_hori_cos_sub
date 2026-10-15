@@ -147,7 +147,8 @@ def fig_completion_orders():
         m, (lo, hi) = 100 * np.mean(o['means']), [100 * c for c in o['ci']]
         a.scatter(i + rng.uniform(-.2, .2, len(o['means'])), 100 * np.array(o['means']), s=8, color=color, alpha=.3, lw=0)
         a.errorbar(i + .3, m, [[m - lo], [hi - m]], fmt='o', ms=6, color=color, capsize=3, lw=1.2)
-        a.text(i, 108, f"{m:.2f}%\n{o['successes']}/{o['trials']}", ha='center', fontsize=7.5, color=color)
+        n = 10 * len(o['means'])  # trials per run; selector controllers show the mean over their seeds
+        a.text(i, 108, f"{m:.2f}%\n{o['successes'] * n / o['trials']:.0f}/{n}", ha='center', fontsize=7.5, color=color)
     a.set_xticks(range(3), ['Base', 'Single', 'DDQN'])
     a.tick_params(axis='x', length=0)
     a.set_ylim(-5, 122)
