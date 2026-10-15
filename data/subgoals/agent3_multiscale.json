@@ -1,0 +1,33 @@
+{
+ "description": "multi-timescale events of agent 3, continuous cycles 1-3",
+ "termination_radius_m": 0.02,
+ "timeout_steps": 30,
+ "subgoals": [
+  {
+   "id": "A",
+   "xy_m": [
+    0.026262223720550537,
+    0.5076596736907959
+   ],
+   "element": 13,
+   "step": 11,
+   "bands": [
+    31,
+    38
+   ]
+  },
+  {
+   "id": "B",
+   "xy_m": [
+    -0.053502023220062256,
+    0.5020514726638794
+   ],
+   "element": 9,
+   "step": 12,
+   "bands": [
+    19,
+    21
+   ]
+  }
+ ]
+}

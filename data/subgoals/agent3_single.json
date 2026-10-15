@@ -1,0 +1,27 @@
+{
+ "description": "peaks of single discount 6 of agent 3, continuous cycles 1-3",
+ "termination_radius_m": 0.02,
+ "timeout_steps": 30,
+ "discount": 6,
+ "horizon_s": 0.026611914125193138,
+ "subgoals": [
+  {
+   "id": "A",
+   "xy_m": [
+    -0.0869942307472229,
+    0.465110182762146
+   ],
+   "element": 16,
+   "step": 4
+  },
+  {
+   "id": "B",
+   "xy_m": [
+    -0.0616772323846817,
+    0.4987857937812805
+   ],
+   "element": 10,
+   "step": 7
+  }
+ ]
+}

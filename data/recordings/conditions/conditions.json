@@ -1,0 +1,135 @@
+{
+ "mass_x0.5": {
+  "body": "mass",
+  "factor": 0.5,
+  "acquisitions": 0,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "mass_x0.7": {
+  "body": "mass",
+  "factor": 0.7,
+  "acquisitions": 1,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "mass_x0.85": {
+  "body": "mass",
+  "factor": 0.85,
+  "acquisitions": 1,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "mass_x1.15": {
+  "body": "mass",
+  "factor": 1.15,
+  "acquisitions": 160,
+  "median_reach_ms": 235.0,
+  "kept": true
+ },
+ "mass_x1.3": {
+  "body": "mass",
+  "factor": 1.3,
+  "acquisitions": 160,
+  "median_reach_ms": 210.0,
+  "kept": true
+ },
+ "mass_x1.8": {
+  "body": "mass",
+  "factor": 1.8,
+  "acquisitions": 1,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "forearm_x0.5": {
+  "body": "forearm",
+  "factor": 0.5,
+  "acquisitions": 0,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "forearm_x0.7": {
+  "body": "forearm",
+  "factor": 0.7,
+  "acquisitions": 1,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "forearm_x0.85": {
+  "body": "forearm",
+  "factor": 0.85,
+  "acquisitions": 4,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "forearm_x1.3": {
+  "body": "forearm",
+  "factor": 1.3,
+  "acquisitions": 160,
+  "median_reach_ms": 240.0,
+  "kept": true
+ },
+ "forearm_x1.5": {
+  "body": "forearm",
+  "factor": 1.5,
+  "acquisitions": 160,
+  "median_reach_ms": 270.0,
+  "kept": true
+ },
+ "forearm_x1.8": {
+  "body": "forearm",
+  "factor": 1.8,
+  "acquisitions": 160,
+  "median_reach_ms": 330.0,
+  "kept": true
+ },
+ "forearm_x2.2": {
+  "body": "forearm",
+  "factor": 2.2,
+  "acquisitions": 1,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "workspace_x0.6": {
+  "body": "workspace",
+  "factor": 0.6,
+  "acquisitions": 0,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "workspace_x0.8": {
+  "body": "workspace",
+  "factor": 0.8,
+  "acquisitions": 160,
+  "median_reach_ms": 230.0,
+  "kept": true
+ },
+ "workspace_x0.9": {
+  "body": "workspace",
+  "factor": 0.9,
+  "acquisitions": 160,
+  "median_reach_ms": 255.0,
+  "kept": true
+ },
+ "workspace_x1.1": {
+  "body": "workspace",
+  "factor": 1.1,
+  "acquisitions": 160,
+  "median_reach_ms": 265.0,
+  "kept": true
+ },
+ "workspace_x1.2": {
+  "body": "workspace",
+  "factor": 1.2,
+  "acquisitions": 0,
+  "median_reach_ms": null,
+  "kept": false
+ },
+ "workspace_x1.4": {
+  "body": "workspace",
+  "factor": 1.4,
+  "acquisitions": 0,
+  "median_reach_ms": null,
+  "kept": false
+ }
+}
