@@ -122,6 +122,22 @@ def fig_completion_time():
     save(fig, 'completion_time')
 
 
+def fig_completion_time_independent():
+    a3 = transfer['agent3']['duration']
+    bars = [('Base SAC', a3['frozen'], GREY), ('DDQN +\nsingle horizon', a3['single'], LIGHT), ('DDQN +\nmulti-timescale', a3['multiscale'], BLUE)]
+    fig, ax = plt.subplots(figsize=(4.3, 3.3))
+    for i, (label, value, color) in enumerate(bars):
+        ax.bar(i, value, .7, color=color, edgecolor=INK, lw=.5)
+        ax.text(i, value + .15, f'{value:.2f} s\n' + ('reference' if i == 0 else f'{100 * (value / a3["frozen"] - 1):+.1f}% vs base'),
+                ha='center', fontsize=7.5)
+    ax.set_xticks(range(len(bars)), [b[0] for b in bars], fontsize=7.5)
+    ax.tick_params(axis='x', length=0)
+    ax.set_ylabel('failure-capped completion time (s)')
+    ax.set_ylim(0, 8.5)
+    fig.tight_layout()
+    save(fig, 'completion_time_independent')
+
+
 def fig_subgoal_torque():
     torque = muscles['torque']
     names = list(torque)
@@ -361,7 +377,7 @@ def fig_muscle_patterns():
 
 
 if __name__ == '__main__':
-    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
+    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_completion_time_independent, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
                  fig_horizon_across_systems, fig_tempo, fig_robustness, fig_humans_onsets, fig_humans_transitions,
                  fig_muscle_patterns):
         make()
