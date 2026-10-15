@@ -133,7 +133,7 @@ def fig_subgoal_torque():
             ax.plot(i, torque[n]['net'][j], 'o', color=INK, ms=4.5, zorder=4, label='net muscle torque' if i == 0 else None)
         ax.axhline(0, color=INK, lw=.7)
         ax.set_xticks(range(len(names)), names)
-        ax.set_xlabel('option arrival at subgoal')
+        ax.set_xlabel('subgoal')
         ax.set_title(joint, fontsize=9)
     axes[0].set_ylabel('muscle torque (N m)')
     handles, labels = axes[0].get_legend_handles_labels()
@@ -145,16 +145,46 @@ def fig_subgoal_torque():
 def fig_subgoal_net_torque():
     torque = muscles['torque']
     names = list(torque)
-    shoulder, elbow = np.array([torque[n]['net'] for n in names]).T
-    fig, ax = plt.subplots(figsize=(3.8, 3.2))
-    ax.bar(names, shoulder, .6, color=BLUE, label='shoulder')
-    # stack elbow on shoulder only when signs match, else from zero, so negative parts stay below the axis
-    ax.bar(names, elbow, .6, bottom=np.where(np.sign(shoulder) == np.sign(elbow), shoulder, 0), color=ORANGE, label='elbow')
+    x = np.arange(len(names))
+    fig, ax = plt.subplots(figsize=(3.4, 2.4))
+    for j, (dx, hatch) in enumerate(((-.2, None), (.2, '////'))):
+        get = lambda k: np.array([torque[n][k][j] for n in names])
+        ax.bar(x + dx, get('positive'), .38, color=BLUE, hatch=hatch, edgecolor='white', lw=0)
+        ax.bar(x + dx, get('negative'), .38, color=ORANGE, hatch=hatch, edgecolor='white', lw=0)
+        ax.plot(x + dx, get('net'), 'o', color=INK, ms=3.5, zorder=4)
     ax.axhline(0, color=INK, lw=.7)
-    ax.set_xlabel('option arrival at subgoal')
-    ax.set_ylabel('net muscle torque (N m)')
-    ax.legend(fontsize=7.5)
+    ax.set_xticks(x, names)
+    ax.set_xlabel('subgoal')
+    ax.set_ylabel('muscle torque (N m)')
+    handles = [plt.Rectangle((0, 0), 1, 1, color=BLUE), plt.Rectangle((0, 0), 1, 1, color=ORANGE),
+               plt.Line2D([], [], marker='o', color=INK, ls='', ms=3.5),
+               plt.Rectangle((0, 0), 1, 1, fc=GREY), plt.Rectangle((0, 0), 1, 1, fc=GREY, hatch='////', ec='white', lw=0)]
+    ax.legend(handles, ['positive', 'negative', 'net', 'shoulder', 'elbow'], loc='upper center', bbox_to_anchor=(.5, 1.2),
+              ncol=5, fontsize=6.5, handlelength=1, columnspacing=.7)
     save(fig, 'subgoal_net_torque')
+
+
+def fig_torque_cancellation():
+    torque = muscles['torque']
+    names = list(torque)
+    x = np.arange(len(names))
+    fig, ax = plt.subplots(figsize=(3.2, 2.2))
+    for j, (dx, color, joint) in enumerate(((-.2, BLUE, 'shoulder'), (.2, ORANGE, 'elbow'))):
+        t = {k: np.array([torque[n][k][j] for n in names]) for k in ('positive', 'negative', 'net')}
+        total, net = t['positive'] - t['negative'], np.abs(t['net'])
+        ax.bar(x + dx, total, .38, color=color, alpha=.3)
+        ax.bar(x + dx, net, .38, color=color, label=joint)
+        for xi, tot, n in zip(x + dx, total, net):
+            ax.text(xi, tot + 1, f'{1 - n / tot:.0%}', ha='center', fontsize=5, color=INK)
+    ax.set_xticks(x, names)
+    ax.set_ylim(0, 75)
+    ax.set_xlabel('subgoal')
+    ax.set_ylabel('muscle torque (N m)')
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(plt.Rectangle((0, 0), 1, 1, fc=GREY, alpha=.3))
+    ax.legend(handles, ['shoulder |net|', 'elbow |net|', 'cancelled (%)'], loc='upper center', bbox_to_anchor=(.5, 1.22),
+              ncol=3, fontsize=6.5, handlelength=1, columnspacing=.8)
+    save(fig, 'torque_cancellation')
 
 
 def fig_independent_agent():
@@ -331,7 +361,7 @@ def fig_muscle_patterns():
 
 
 if __name__ == '__main__':
-    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_subgoal_torque, fig_subgoal_net_torque, fig_independent_agent,
+    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
                  fig_horizon_across_systems, fig_tempo, fig_robustness, fig_humans_onsets, fig_humans_transitions,
                  fig_muscle_patterns):
         make()
