@@ -12,7 +12,7 @@ import numpy as np
 
 import horizons as H
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'figures'
 BLUE, ORANGE, INK, MUTED, LIGHT, GREY = '#2a78d6', '#eb6834', '#0b0b0b', '#52514e', '#d9d8d4', '#8f8e8a'
 plt.rcParams.update({'font.size': 9, 'axes.edgecolor': MUTED, 'axes.labelcolor': INK, 'xtick.color': MUTED,
@@ -140,6 +140,21 @@ def fig_subgoal_torque():
     fig.legend(handles, labels, loc='upper center', ncol=3, fontsize=7.5, bbox_to_anchor=(.5, 1.06))
     fig.tight_layout()
     save(fig, 'subgoal_torque')
+
+
+def fig_subgoal_net_torque():
+    torque = muscles['torque']
+    names = list(torque)
+    shoulder, elbow = np.array([torque[n]['net'] for n in names]).T
+    fig, ax = plt.subplots(figsize=(3.8, 3.2))
+    ax.bar(names, shoulder, .6, color=BLUE, label='shoulder')
+    # stack elbow on shoulder only when signs match, else from zero, so negative parts stay below the axis
+    ax.bar(names, elbow, .6, bottom=np.where(np.sign(shoulder) == np.sign(elbow), shoulder, 0), color=ORANGE, label='elbow')
+    ax.axhline(0, color=INK, lw=.7)
+    ax.set_xlabel('option arrival at subgoal')
+    ax.set_ylabel('net muscle torque (N m)')
+    ax.legend(fontsize=7.5)
+    save(fig, 'subgoal_net_torque')
 
 
 def fig_independent_agent():
@@ -316,7 +331,7 @@ def fig_muscle_patterns():
 
 
 if __name__ == '__main__':
-    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_subgoal_torque, fig_independent_agent,
+    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_subgoal_torque, fig_subgoal_net_torque, fig_independent_agent,
                  fig_horizon_across_systems, fig_tempo, fig_robustness, fig_humans_onsets, fig_humans_transitions,
                  fig_muscle_patterns):
         make()
