@@ -138,6 +138,35 @@ def fig_completion_time_independent():
     save(fig, 'completion_time_independent')
 
 
+def fig_completion_orders():
+    t = transfer['agent3']
+    rng = np.random.default_rng(0)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.4, 3), gridspec_kw=dict(width_ratios=[1, 1.1]))
+    for i, (key, label, color) in enumerate((('frozen', 'Base', MUTED), ('single', 'Single', GREY), ('multiscale', 'DDQN', BLUE))):
+        o = t['orders'][key]
+        m, (lo, hi) = 100 * np.mean(o['means']), [100 * c for c in o['ci']]
+        a.scatter(i + rng.uniform(-.2, .2, len(o['means'])), 100 * np.array(o['means']), s=8, color=color, alpha=.3, lw=0)
+        a.errorbar(i + .3, m, [[m - lo], [hi - m]], fmt='o', ms=6, color=color, capsize=3, lw=1.2)
+        a.text(i, 108, f"{m:.2f}%\n{o['successes']}/{o['trials']}", ha='center', fontsize=7.5, color=color)
+    a.set_xticks(range(3), ['Base', 'Single', 'DDQN'])
+    a.tick_params(axis='x', length=0)
+    a.set_ylim(-5, 122)
+    a.set_yticks(range(0, 101, 20))
+    a.set_ylabel('sequence completion (%)')
+    for y, key, label in ((1, 'multiscale_minus_frozen', 'versus base'), (0, 'multiscale_minus_single', 'versus single')):
+        d, lo, hi = [100 * v for v in t[key]]
+        b.errorbar(d, y, xerr=[[d - lo], [hi - d]], fmt='o', ms=6, color=BLUE, capsize=3, lw=1.2)
+        b.text(d, y + .15, f'+{d:.1f} pp  [{lo:.1f}, {hi:.1f}]', ha='center', fontsize=7.5)
+    b.axvline(0, color=MUTED, lw=.7, ls=':')
+    b.set_yticks([1, 0], ['versus base', 'versus single'])
+    b.tick_params(axis='y', length=0)
+    b.set_ylim(-.5, 1.5)
+    b.set_xlim(-5, 80)
+    b.set_xlabel('paired completion gain (percentage points)')
+    fig.tight_layout()
+    save(fig, 'completion_orders')
+
+
 def fig_subgoal_torque():
     torque = muscles['torque']
     names = list(torque)
@@ -377,7 +406,7 @@ def fig_muscle_patterns():
 
 
 if __name__ == '__main__':
-    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_completion_time_independent, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
+    for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_completion_time_independent, fig_completion_orders, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
                  fig_horizon_across_systems, fig_tempo, fig_robustness, fig_humans_onsets, fig_humans_transitions,
                  fig_muscle_patterns):
         make()

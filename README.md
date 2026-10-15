@@ -88,6 +88,7 @@ depend on floating-point summation order).
 | `transfer.png` | zero-shot transfer to unseen 8- and 16-target sequences |
 | `transfer_detail.png` | frozen agent vs hierarchical controller by start set |
 | `completion_time.png` | failure-capped completion time |
+| `completion_orders.png` | per-order completion and paired gains, independently trained agent |
 | `completion_time_independent.png` | failure-capped completion time, independently trained agent only |
 | `subgoal_torque.png` | muscle torques at shoulder and elbow when options reach subgoals A-E |
 | `independent_agent.png` | transfer to an independently trained agent |

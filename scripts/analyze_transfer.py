@@ -16,7 +16,7 @@ import numpy as np
 
 import control
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 TRIALS = ROOT / 'results/transfer'
 BOOT = 10_000
 
@@ -82,11 +82,17 @@ def agent3():
         minus_frozen.append(m - frozen[o].mean())
     seeds_m, seeds_s = multiscale.mean((1, 2)), single.mean((1, 2))
     time = lambda names: float(np.mean(np.concatenate([duration(x, 8.0) for x in names])))
+    # per-order completion (over starts and seeds) with a 95% order-bootstrap interval of the mean
+    per_order = dict(frozen=frozen.mean(1), single=single.mean((0, 2)), multiscale=multiscale.mean((0, 2)))
+    boot = rng.integers(0, n, (BOOT, n))
+    orders = {k: dict(means=v.tolist(), ci=np.percentile(v[boot].mean(1), [2.5, 97.5]).tolist(),
+                      trials=int(t.size), successes=int(t.sum()))
+              for (k, v), t in zip(per_order.items(), (frozen, single, multiscale))}
     return dict(frozen=float(frozen.mean()), multiscale=float(multiscale.mean()), single=float(single.mean()),
                 multiscale_seeds=seeds_m.tolist(), single_seeds=seeds_s.tolist(),
                 multiscale_minus_single=[float(multiscale.mean() - single.mean()), *np.percentile(minus_single, [2.5, 97.5]).tolist()],
                 multiscale_minus_frozen=[float(multiscale.mean() - frozen.mean()), *np.percentile(minus_frozen, [2.5, 97.5]).tolist()],
-                multiscale_seeds_above_every_single=int((seeds_m > seeds_s.max()).sum()),
+                multiscale_seeds_above_every_single=int((seeds_m > seeds_s.max()).sum()), orders=orders,
                 duration=dict(frozen=time(['agent3_frozen']), single=time([f'agent3_single_seed{k}' for k in range(1, 6)]),
                               multiscale=time([f'agent3_multiscale_seed{k}' for k in range(1, 6)])))
 
