@@ -11,7 +11,7 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.signal import find_peaks
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DT = 0.01                  # s per step
 SHORTEST_LAG = 0.01        # s, peak lag of the first band
 LONGEST_LAG = 1.8          # s, peak lag of the last band

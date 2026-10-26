@@ -14,7 +14,7 @@ from scipy.ndimage import gaussian_filter1d
 
 import horizons as H
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 ARCHIVE = ROOT / 'human_data/bids_data.zip'
 DEVELOPMENT, HELDOUT = range(401, 411), range(411, 421)
 PAD = 1530            # rest frames appended to every trial so each frame has the future the bank needs

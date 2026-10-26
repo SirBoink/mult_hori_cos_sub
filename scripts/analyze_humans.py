@@ -20,7 +20,7 @@ import arm
 import horizons as H
 import human
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 PUBLISHED = ROOT / 'human_data/published_models'
 sys.path.insert(0, str(PUBLISHED))
 from src import analyses as published   # noqa: E402  (Cuevas Rivera & Kiebel's code, unmodified)

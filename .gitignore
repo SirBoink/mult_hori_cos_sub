@@ -1,3 +1,13 @@
+#general files
 __pycache__/
 *.pyc
+
+#folders
 runs/
+submission/
+slide_deck/
+report_doc/
+
+#files
+commenting.md
+

@@ -138,10 +138,10 @@ def fig_completion_time_independent():
     save(fig, 'completion_time_independent')
 
 
-def fig_completion_orders():
+def completion_panel(a):
+    """Held-out agent on unseen orders: dots are orders, markers mean and 95% interval (Figure 1 of the draft)."""
     t = transfer['agent3']
     rng = np.random.default_rng(0)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(7.4, 3), gridspec_kw=dict(width_ratios=[1, 1.1]))
     for i, (key, label, color) in enumerate((('frozen', 'Base', MUTED), ('single', 'Single', GREY), ('multiscale', 'DDQN', BLUE))):
         o = t['orders'][key]
         m, (lo, hi) = 100 * np.mean(o['means']), [100 * c for c in o['ci']]
@@ -154,6 +154,12 @@ def fig_completion_orders():
     a.set_ylim(-5, 122)
     a.set_yticks(range(0, 101, 20))
     a.set_ylabel('sequence completion (%)')
+
+
+def fig_completion_orders():
+    t = transfer['agent3']
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.4, 3), gridspec_kw=dict(width_ratios=[1, 1.1]))
+    completion_panel(a)
     for y, key, label in ((1, 'multiscale_minus_frozen', 'versus base'), (0, 'multiscale_minus_single', 'versus single')):
         d, lo, hi = [100 * v for v in t[key]]
         b.errorbar(d, y, xerr=[[d - lo], [hi - d]], fmt='o', ms=6, color=BLUE, capsize=3, lw=1.2)
@@ -210,11 +216,11 @@ def fig_subgoal_net_torque():
     save(fig, 'subgoal_net_torque')
 
 
-def fig_torque_cancellation():
+def torque_panel(ax):
+    """Light bars: total muscle torque at each joint; dark bars: |net|; labels: share cancelled by opposing muscles."""
     torque = muscles['torque']
     names = list(torque)
     x = np.arange(len(names))
-    fig, ax = plt.subplots(figsize=(3.2, 2.2))
     for j, (dx, color, joint) in enumerate(((-.2, BLUE, 'shoulder'), (.2, ORANGE, 'elbow'))):
         t = {k: np.array([torque[n][k][j] for n in names]) for k in ('positive', 'negative', 'net')}
         total, net = t['positive'] - t['negative'], np.abs(t['net'])
@@ -230,6 +236,11 @@ def fig_torque_cancellation():
     handles.append(plt.Rectangle((0, 0), 1, 1, fc=GREY, alpha=.3))
     ax.legend(handles, ['shoulder |net|', 'elbow |net|', 'cancelled (%)'], loc='upper center', bbox_to_anchor=(.5, 1.22),
               ncol=3, fontsize=6.5, handlelength=1, columnspacing=.8)
+
+
+def fig_torque_cancellation():
+    fig, ax = plt.subplots(figsize=(3.2, 2.2))
+    torque_panel(ax)
     save(fig, 'torque_cancellation')
 
 
@@ -360,31 +371,46 @@ def fig_humans_onsets():
 
 
 def fig_humans_transitions():
-    v, ch = humans['via_points'], humans['chunking']
-    bins = np.array(v['bins_frames']) * 10
-    centres = (bins[:-1] + bins[1:]) / 2
     fig, (a, b) = plt.subplots(1, 2, figsize=(7.2, 3.2), gridspec_kw=dict(width_ratios=[1.4, 1]))
-    events, frames = np.array(v['events_histogram'], float), np.array(v['frames_histogram'], float)
-    a.bar(centres, frames / frames.sum(), 50, color=LIGHT, label='all frames')
-    a.step(centres, events / events.sum(), where='mid', color=ORANGE, lw=1.6, label='rule events')
-    a.axvspan(-50, 50, color=ORANGE, alpha=.08, lw=0)
-    w = v['within_50ms']
-    a.text(.03, .95, f"{w['events']:.0%} of events within 50 ms\n({w['frames']:.0%} of frames)", transform=a.transAxes, va='top', fontsize=7.5)
-    a.set_xlabel('time from nearest via-point passage (ms)')
-    a.set_ylabel('share')
-    a.legend(fontsize=7, loc='upper right')
-    a.set_title('a  Events mark segment transitions', fontsize=9, loc='left')
-    rng = np.random.default_rng(1)
-    for i, (key, color) in enumerate((('flat', GREY), ('hierarchical', ORANGE))):
-        values = np.array(ch[key]) * 100
-        b.plot(i + rng.uniform(-.15, .15, len(values)), values, 'o', ms=3, color=color, alpha=.7)
-        b.plot([i - .25, i + .25], [np.median(values)] * 2, color=INK, lw=1.5)
-    b.set_xticks([0, 1], [f"flat\n(n = {len(ch['flat'])})", f"hierarchical\n(n = {len(ch['hierarchical'])})"])
-    b.set_xlim(-.6, 1.6)
-    b.set_ylabel('events per 100 frames\ninside the second target')
-    b.set_title(f"b  Chunked sequences: AUC {ch['auc']:.2f}\n[95% CI {ch['ci95'][0]:.2f}, {ch['ci95'][1]:.2f}]", fontsize=9, loc='left')
+    via_point_panel(a)
+    a.set_title('a  Transition events cluster at via-points', fontsize=9, loc='left')
+    hierarchy_panel(b)
+    b.set_title(f"b  Hierarchical sequences: AUC {humans['chunking']['auc']:.2f}", fontsize=9, loc='left')
     fig.tight_layout()
     save(fig, 'humans_transitions')
+
+
+def via_point_panel(a, fontsize=7.5):
+    """Human transition events and all frames, relative to the nearest via-point passage."""
+    v = humans['via_points']
+    bins = np.array(v['bins_frames']) * 10
+    centres = (bins[:-1] + bins[1:]) / 2
+    events, frames = np.array(v['events_histogram'], float), np.array(v['frames_histogram'], float)
+    a.bar(centres, frames / frames.sum(), 50, color=LIGHT, label='all frames')
+    a.step(centres, events / events.sum(), where='mid', color=ORANGE, lw=1.6, label='transition events')
+    a.axvspan(-50, 50, color=ORANGE, alpha=.08, lw=0)
+    w = v['within_50ms']
+    a.text(.03, .95, f"{w['events']:.0%} of events within 50 ms\n({w['frames']:.0%} of frames)", transform=a.transAxes, va='top', fontsize=fontsize)
+    a.set_xlabel('time from nearest via-point passage (ms)')
+    a.set_ylabel('share')
+    a.legend(fontsize=fontsize - .5, loc='upper right')
+
+
+def hierarchy_panel(b):
+    """Our rule's events inside the second target, in human sequences fit by the authors' flat (vpSOC) or
+    hierarchical (HiSeq) optimal-control model; violins: distribution over sequences, boxes: quartiles and median."""
+    ch = humans['chunking']
+    groups = [np.array(ch[key]) * 100 for key in ('flat', 'hierarchical')]
+    violins = b.violinplot(groups, [0, 1], widths=.75, showextrema=False)
+    for body, color in zip(violins['bodies'], (GREY, ORANGE)):
+        body.set(facecolor=color, edgecolor=color, alpha=.35)
+    b.boxplot(groups, positions=[0, 1], widths=.18, showfliers=False, patch_artist=True,
+              boxprops=dict(facecolor='white', color=INK, lw=.8), medianprops=dict(color=INK, lw=1.2),
+              whiskerprops=dict(color=INK, lw=.8), capprops=dict(color=INK, lw=.8))
+    b.set_xticks([0, 1], [f"flat model\n(vpSOC, n = {len(ch['flat'])})", f"hierarchical\nmodel (HiSeq,\nn = {len(ch['hierarchical'])})"], fontsize=6.5)
+    b.set_xlim(-.6, 1.6)
+    b.set_xlabel("human sequences fit by the\nauthors' optimal-control model", fontsize=6.5)
+    b.set_ylabel("our rule's transition events\nper 100 frames in 2nd target")
 
 
 def fig_muscle_patterns():
@@ -406,8 +432,107 @@ def fig_muscle_patterns():
     save(fig, 'muscle_patterns')
 
 
+def workflow_panel(ax):
+    """The workflow diagram of the original draft, redrawn: four boxes, read clockwise from the top left."""
+    boxes = {(0, 1): 'Fingertip position,\nvelocity & muscle\nactivations', (1, 1): 'Future predictions\nover 40\ntimescales',
+             (1, 0): 'Changes shared by\nneighboring bands\nmark transitions', (0, 0): 'Selector chooses\noptions to subgoals\nor primitive actions'}
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, fc='#f2f2f2', ec=MUTED, lw=.6))
+    w, h = .45, .37
+    centre = lambda c, r: (.245 + .51 * c, .235 + .53 * r)
+    for (c, r), text in boxes.items():
+        x, y = centre(c, r)
+        ax.add_patch(plt.Rectangle((x - w / 2, y - h / 2), w, h, fc='white', ec=INK, lw=.6))
+        ax.text(x, y, text, ha='center', va='center', fontsize=5.3, color=INK, linespacing=1.05)
+    arrow = dict(arrowstyle='->', color=MUTED, lw=.8)
+    ax.annotate('', centre(1, 1) - np.array([w / 2, 0]), centre(0, 1) + np.array([w / 2, 0]), arrowprops=arrow)
+    ax.annotate('', centre(1, 0) + np.array([0, h / 2]), centre(1, 1) - np.array([0, h / 2]), arrowprops=arrow)
+    ax.annotate('', centre(0, 0) + np.array([w / 2, 0]), centre(1, 0) - np.array([w / 2, 0]), arrowprops=arrow)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis('off')
+
+
+def fig_submission():
+    """COSYNE abstract: a, b results; c workflow; d torque at subgoal arrival (7.5 in wide, the text width)."""
+    fig = plt.figure(figsize=(7.5, 2.2))
+    gs = fig.add_gridspec(2, 3, width_ratios=[1, 1.05, 1.45], height_ratios=[1.35, 1.2], wspace=.42, hspace=.6)
+    a, b = fig.add_subplot(gs[:, 0]), fig.add_subplot(gs[:, 1])
+    c, d = fig.add_subplot(gs[0, 2]), fig.add_subplot(gs[1, 2])
+    # a  held-out agent, 96 unseen orders x 10 start postures
+    t = transfer['agent3']
+    rng = np.random.default_rng(0)
+    for i, (key, color) in enumerate((('frozen', MUTED), ('single', GREY), ('multiscale', BLUE))):
+        o = t['orders'][key]
+        m, (lo, hi) = 100 * np.mean(o['means']), [100 * v for v in o['ci']]
+        a.scatter(i + rng.uniform(-.2, .2, len(o['means'])), 100 * np.array(o['means']), s=4, color=color, alpha=.3, lw=0)
+        a.errorbar(i + .3, m, [[m - lo], [hi - m]], fmt='o', ms=4, color=color, capsize=2, lw=1)
+        a.text(i, 106, f'{m:.0f}%', ha='center', fontsize=7.5, color=color)
+    a.set_xticks(range(3), ['no\nsubgoals', 'single\ntimescale', 'multi-\nscale'], fontsize=6.5)
+    a.tick_params(axis='x', length=0)
+    a.set_ylim(-5, 118)
+    a.set_yticks(range(0, 101, 25))
+    a.set_ylabel('sequences completed (%)')
+    a.set_title('a  Held-out agent', fontsize=8.5, loc='left')
+    onset_panel(b)
+    b.set_title(f"b  Humans ({humans['onsets']['participants']} held out)", fontsize=8.5, loc='left')
+    workflow_panel(c)
+    c.set_title('c  Workflow', fontsize=8.5, loc='left')
+    torque_panel(d)
+    handles, _ = d.get_legend_handles_labels()
+    d.legend(handles + [plt.Rectangle((0, 0), 1, 1, fc=GREY, alpha=.3)], ['shoulder |net|', 'elbow |net|', 'cancelled (%)'],
+             loc='upper center', bbox_to_anchor=(.5, 1.3), ncol=3, fontsize=6, handlelength=.8, columnspacing=.5)
+    d.set_title('d  Torque at subgoal arrival', fontsize=8.5, loc='left', pad=16)
+    save(fig, 'submission')
+
+
+def onset_panel(b):
+    """Held-out humans: transitions in the onset window (first third) of a segment, against chance."""
+    o, tuned = humans['onsets'], transitions['robustness']['conditions']['humans']['tuned']
+    bars = [('best for\nagents', tuned, LIGHT), ('best single\n(hindsight)', o['best_discount_share'], GREY),
+            ('multi-\nscale', o['rule'], ORANGE)]
+    for x, (label, value, color) in enumerate(bars):
+        b.bar(x, 100 * value, .65, color=color)
+        b.text(x, 100 * value + 1.5, f'{value:.0%}', ha='center', fontsize=7.5)
+    b.axhline(100 * o['chance'], color=MUTED, ls='--', lw=.8)
+    b.text(-.45, 100 * o['chance'] + 1.5, 'chance', color=MUTED, fontsize=7)
+    diff = [100 * v for v in o['rule_minus_best']]
+    b.text(2, 100 * o['rule'] + 8, f'+{diff[0]:.0f} [{diff[1]:.0f}, {diff[2]:.0f}]', ha='center', fontsize=7)
+    b.set_xticks(range(3), [x[0] for x in bars], fontsize=6.5)
+    b.tick_params(axis='x', length=0)
+    b.set_ylim(0, 75)
+    b.set_ylabel('transitions in onset window (%)')
+
+
+def fig_draft():
+    """Supervisor's draft layout as one figure: a completion, b torque, c workflow, d-f human reaching."""
+    fig = plt.figure(figsize=(7.5, 4.1))
+    top, bottom = fig.add_gridspec(2, 1, hspace=.75)
+    a, b, c = (fig.add_subplot(s) for s in top.subgridspec(1, 3, width_ratios=[1, 1, 1.35], wspace=.45))
+    d, e, f = (fig.add_subplot(s) for s in bottom.subgridspec(1, 3, width_ratios=[1.45, 1, 1], wspace=.6))
+    completion_panel(a)
+    for label in a.texts:
+        label.set_fontsize(6)  # percentage labels must fit above the narrow columns
+    torque_panel(b)
+    workflow_panel(c)
+    via_point_panel(d, fontsize=7)
+    d.legend(fontsize=6.5, loc='center right')
+    d.set_xlabel('time from via-point passage (ms)')
+    hierarchy_panel(e)
+    e.set_xticks([0, 1], ['flat\nmodel', 'hierarchical\nmodel'], fontsize=6.5)
+    e.set_xlabel('model explaining the sequence', fontsize=7)
+    e.set_ylabel("our rule's boundaries in the\n2nd target (per 100 frames)", fontsize=7.5)
+    onset_panel(f)
+    f.set_xticks(range(3), ['agent-\ntuned', 'best\nsingle', 'multi-\nscale'], fontsize=6.5)
+    f.set_ylabel('onset window (%)')
+    titles = ['a  Held-out agent', 'b  Torque at subgoal arrival', 'c  Workflow', 'd  Humans: via-points',
+              f"e  Authors' models: AUC {humans['chunking']['auc']:.2f}", 'f  Humans: onsets']
+    for ax, title in zip((a, b, c, d, e, f), titles):
+        ax.set_title(title, fontsize=8.5, loc='left', pad=18 if ax in (a, b) else 6)
+    save(fig, 'draft_submission')
+
+
 if __name__ == '__main__':
     for make in (fig_transfer, fig_transfer_detail, fig_completion_time, fig_completion_time_independent, fig_completion_orders, fig_subgoal_torque, fig_subgoal_net_torque, fig_torque_cancellation, fig_independent_agent,
                  fig_horizon_across_systems, fig_tempo, fig_robustness, fig_humans_onsets, fig_humans_transitions,
-                 fig_muscle_patterns):
+                 fig_muscle_patterns, fig_submission, fig_draft):
         make()
